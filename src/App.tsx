@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import InfiniteScroll from 'react-infinite-scroller';
 
@@ -21,28 +21,29 @@ async function fetchData(formData: FormData, cursor: Number) {
 export default function App() {
   const [formData, setFormData] = useState<FormData>({ id: '', main_text: '' });
   const [result, setResult] = useState<Array<ResJSON>>([]);
-  const [cursor, setCursor] = useState<number>(2147483647); // i32::MAX
   const [hasMore, setHasMore] = useState<boolean>(false);
+  const cursor = useRef<number>(0);
 
   const handleFormSubmit = async (data: any) => {
     setFormData(data);
-    let response = await fetchData(data, cursor);
+    cursor.current = 2147483647; // i32::MAX
+    let response = await fetchData(data, cursor.current);
     setResult(response);
     if (response.length === 0) {
       setHasMore(false);
       return;
     }
     setHasMore(true);
-    setCursor(response[response.length - 1].no);
+    cursor.current = response[response.length - 1].no;
   };
   
   const loadMore = async () => {
-    let response = await fetchData(formData, cursor);
+    let response = await fetchData(formData, cursor.current);
     if (response.length === 0) {
       setHasMore(false);
       return;
     }
-    setCursor(response[response.length - 1].no);
+    cursor.current = response[response.length - 1].no;
     setResult([...result, ...response]);
   }
 
@@ -140,8 +141,8 @@ function Res({ res }: { res: ResJSON }) {
         {" "}
         <div className="inline">ID: {res.id}</div>
       </div>
-      <div 
-        className="text-gray-800 prose prose-sm max-w-none"
+      <div
+        className="text-gray-800 prose prose-sm max-w-none prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline"
         dangerouslySetInnerHTML={{ __html: res.main_text_html }} 
       />
     </li>
