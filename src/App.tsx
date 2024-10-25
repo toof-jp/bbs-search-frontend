@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import InfiniteScroll from 'react-infinite-scroller';
 
-const BASE_URL = 'https://tk2-110-56213.vs.sakura.ne.jp/';
+const BASE_URL = 'https://tk2-110-56213.vs.sakura.ne.jp/api/v1';
 
 async function fetchData(formData: FormData, cursor: Number) {
   const params = {
@@ -11,7 +11,7 @@ async function fetchData(formData: FormData, cursor: Number) {
     cursor: cursor.toString(),
   };
   const queryString = new URLSearchParams(params).toString();
-  const url = `${BASE_URL}?${queryString}`;
+  const url = `${BASE_URL}/search?${queryString}`;
   const response = await fetch(url, {
     method: 'GET',
   });
