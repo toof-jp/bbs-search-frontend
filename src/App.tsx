@@ -53,7 +53,7 @@ export default function App() {
           掲示板検索
         </h1>
         <Form onSubmit={handleFormSubmit}/>
-        <Result result={result} hasMore={hasMore} loadMore={loadMore}/>
+        {result.length > 0 && <Result result={result} hasMore={hasMore} loadMore={loadMore}/>}
       </div>
     </div>
   );
