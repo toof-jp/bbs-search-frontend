@@ -37,32 +37,37 @@ export default function Search() {
   const [result, setResult] = useState<Array<ResJSON>>([]);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const cursor = useRef<number>(0);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleFormSubmit = async (data: FormData) => {
-    setFormData(data);
-    // Update URL parameters
-    setSearchParams({
-      id: data.id,
-      main_text: data.main_text,
-      name_and_trip: data.name_and_trip,
-      ascending: data.ascending.toString(),
-      since: data.since,
-      until: data.until,
-    });
+    setIsSearching(true);
+    try {
+      setFormData(data);
+      setSearchParams({
+        id: data.id,
+        main_text: data.main_text,
+        name_and_trip: data.name_and_trip,
+        ascending: data.ascending.toString(),
+        since: data.since,
+        until: data.until,
+      });
 
-    if (data.ascending) {
-      cursor.current = 0;
-    } else {
-      cursor.current = 2147483647; // i32::MAX
+      if (data.ascending) {
+        cursor.current = 0;
+      } else {
+        cursor.current = 2147483647;
+      }
+      let response = await fetchData(data, cursor.current);
+      setResult(response);
+      if (response.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      setHasMore(true);
+      cursor.current = response[response.length - 1].no;
+    } finally {
+      setIsSearching(false);
     }
-    let response = await fetchData(data, cursor.current);
-    setResult(response);
-    if (response.length === 0) {
-      setHasMore(false);
-      return;
-    }
-    setHasMore(true);
-    cursor.current = response[response.length - 1].no;
   };
 
   const loadMore = async () => {
@@ -84,12 +89,20 @@ export default function Search() {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
           掲示板検索
         </h1>
-        <Form onSubmit={handleFormSubmit} defaultValues={formData} />
-        {result.length > 0 && (
-          <Result result={result} hasMore={hasMore} loadMore={loadMore} />
+        <Form 
+          onSubmit={handleFormSubmit}
+          defaultValues={formData}
+          isSearching={isSearching}
+        />
+        {isSearching ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+          </div>
+        ) : (
+          result.length > 0 && <Result result={result} hasMore={hasMore} loadMore={loadMore}/>
         )}
       </div>
     </div>
@@ -108,9 +121,11 @@ interface FormData {
 function Form({
   onSubmit,
   defaultValues,
+  isSearching
 }: {
   onSubmit: (data: FormData) => void;
   defaultValues: FormData;
+  isSearching: boolean;
 }) {
   const { control, handleSubmit } = useForm<FormData>({
     defaultValues: defaultValues,
@@ -124,7 +139,6 @@ function Form({
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           ID:
-        </label>
         <Controller
           name="id"
           control={control}
@@ -136,11 +150,11 @@ function Form({
             />
           )}
         />
+        </label>
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           名前:
-        </label>
         <Controller
           name="name_and_trip"
           control={control}
@@ -152,11 +166,11 @@ function Form({
             />
           )}
         />
+        </label>
       </div>
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           本文:
-        </label>
         <Controller
           name="main_text"
           control={control}
@@ -168,11 +182,11 @@ function Form({
             />
           )}
         />
+        </label>
       </div>
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           開始:
-        </label>
         <Controller
           name="since"
           control={control}
@@ -184,11 +198,11 @@ function Form({
             />
           )}
         />
+        </label>
       </div>
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           終了:
-        </label>
         <Controller
           name="until"
           control={control}
@@ -200,8 +214,9 @@ function Form({
             />
           )}
         />
+        </label>
       </div>
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           順番:
         </label>
@@ -233,11 +248,27 @@ function Form({
         />
       </div>
       <div className="flex justify-end">
-        <input
+        <button
           type="submit"
-          value="検索"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer"
-        />
+          disabled={isSearching}
+          className={`
+            flex items-center px-4 py-2 rounded
+            ${isSearching 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-blue-500 hover:bg-blue-700'
+            }
+            text-white font-bold focus:outline-none focus:shadow-outline
+          `}
+        >
+          {isSearching ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              検索中...
+            </>
+          ) : (
+            '検索'
+          )}
+        </button>
       </div>
     </form>
   );
