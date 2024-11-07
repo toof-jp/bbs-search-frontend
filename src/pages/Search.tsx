@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import InfiniteScroll from "react-infinite-scroller";
-import { ResJSON } from "../types/ResJSON";
 import { useSearchParams } from "react-router-dom";
+
+import { ResJson, CountJson } from "../types";
 
 const BASE_URL = "https://tk2-110-56213.vs.sakura.ne.jp";
 
-async function fetchData(formData: FormData, cursor: number) {
+async function fetchData(endpoint: string, formData: FormData, cursor: number) {
   const params = {
     id: formData.id,
     main_text: formData.main_text,
@@ -17,7 +18,7 @@ async function fetchData(formData: FormData, cursor: number) {
     until: formData.until,
   };
   const queryString = new URLSearchParams(params).toString();
-  const url = `${BASE_URL}/api/v1/search?${queryString}`;
+  const url = `${BASE_URL}/api/v1/${endpoint}?${queryString}`;
   const response = await fetch(url, {
     method: "GET",
   });
@@ -34,13 +35,15 @@ export default function Search() {
     since: searchParams.get("since") || "",
     until: searchParams.get("until") || "",
   }));
-  const [result, setResult] = useState<Array<ResJSON>>([]);
+  const [result, setResult] = useState<Array<ResJson>>([]);
+  const [count, setCount] = useState<CountJson | null>(null);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const cursor = useRef<number>(0);
   const [isSearching, setIsSearching] = useState(false);
 
   const handleFormSubmit = async (data: FormData) => {
     setIsSearching(true);
+    setCount(null);
     try {
       setFormData(data);
       setSearchParams({
@@ -57,7 +60,7 @@ export default function Search() {
       } else {
         cursor.current = 2147483647;
       }
-      let response = await fetchData(data, cursor.current);
+      let response = await fetchData("search", data, cursor.current);
       setResult(response);
       if (response.length === 0) {
         setHasMore(false);
@@ -65,13 +68,16 @@ export default function Search() {
       }
       setHasMore(true);
       cursor.current = response[response.length - 1].no;
+
     } finally {
       setIsSearching(false);
     }
+    const countResponse = await fetchData("search/count", data, cursor.current);
+    setCount(countResponse);
   };
 
   const loadMore = async () => {
-    let response = await fetchData(formData, cursor.current);
+    let response = await fetchData("search", formData, cursor.current);
     if (response.length === 0) {
       setHasMore(false);
       return;
@@ -102,7 +108,7 @@ export default function Search() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
           </div>
         ) : (
-          result.length > 0 && <Result result={result} hasMore={hasMore} loadMore={loadMore}/>
+          result.length > 0 && <Result result={result} count={count} hasMore={hasMore} loadMore={loadMore}/>
         )}
       </div>
     </div>
@@ -276,9 +282,10 @@ function Form({
 
 function Result({
   result,
+  count,
   loadMore,
   hasMore,
-}: { result: Array<ResJSON>; loadMore: () => void; hasMore: boolean }) {
+}: { result: Array<ResJson>; count: CountJson | null; loadMore: () => void; hasMore: boolean }) {
   const loader = (
     <div key="loader" className="flex justify-center py-4 text-gray-600">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
@@ -287,6 +294,7 @@ function Result({
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
+      <Count count={count} />
       <InfiniteScroll
         loadMore={loadMore}
         hasMore={hasMore}
@@ -294,7 +302,7 @@ function Result({
         className="space-y-4"
       >
         <ul className="divide-y divide-gray-200">
-          {result.map((res: ResJSON) => (
+          {result.map((res: ResJson) => (
             <Res key={res.no} res={res} />
           ))}
         </ul>
@@ -303,7 +311,19 @@ function Result({
   );
 }
 
-function Res({ res }: { res: ResJSON }) {
+function Count({ count }: { count: CountJson | null }) {
+  if (!count) {
+    return null;
+  }
+
+  return (
+    <div className="text-gray-800 prose prose-sm max-w-none prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline">
+      検索結果: {count.total_res_count}件 (書き込みID数: {count.unique_id_count}件)
+    </div>
+  );
+}
+
+function Res({ res }: { res: ResJson }) {
   return (
     <li className="py-4">
       <div className="text-sm text-gray-600 mb-2">
@@ -334,7 +354,7 @@ function NoLink({ no }: { no: number }) {
   );
 }
 
-function Oekaki({ res }: { res: ResJSON }) {
+function Oekaki({ res }: { res: ResJson }) {
   const imageUrl = `${BASE_URL}/images/${res.oekaki_id}.png`;
   return (
     <div className="mt-2 prose prose-sm">
