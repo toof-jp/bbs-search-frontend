@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { ResJson, CountJson } from "../types";
 
-const BASE_URL = "https://tk2-110-56213.vs.sakura.ne.jp";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 async function fetchData(endpoint: string, formData: FormData, cursor: number) {
   const params = {
@@ -40,6 +40,8 @@ export default function Search() {
   const [hasMore, setHasMore] = useState<boolean>(false);
   const cursor = useRef<number>(0);
   const [isSearching, setIsSearching] = useState(false);
+  
+  const RESULT_LIMIT = 100;
 
   const handleFormSubmit = async (data: FormData) => {
     setIsSearching(true);
@@ -62,7 +64,7 @@ export default function Search() {
       }
       let response = await fetchData("search", data, cursor.current);
       setResult(response);
-      if (response.length === 0) {
+      if (response.length < RESULT_LIMIT) {
         setHasMore(false);
         return;
       }
@@ -78,7 +80,7 @@ export default function Search() {
 
   const loadMore = async () => {
     let response = await fetchData("search", formData, cursor.current);
-    if (response.length === 0) {
+    if (response.length < RESULT_LIMIT) {
       setHasMore(false);
       return;
     }
