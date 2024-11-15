@@ -46,31 +46,36 @@ export default function Search() {
   const handleFormSubmit = async (data: FormData) => {
     setIsSearching(true);
     setCount(null);
-    try {
-      setFormData(data);
-      setSearchParams({
-        id: data.id,
-        main_text: data.main_text,
-        name_and_trip: data.name_and_trip,
-        ascending: data.ascending.toString(),
-        since: data.since,
-        until: data.until,
-      });
+    setFormData(data);
+    setSearchParams({
+      id: data.id,
+      main_text: data.main_text,
+      name_and_trip: data.name_and_trip,
+      ascending: data.ascending.toString(),
+      since: data.since,
+      until: data.until,
+    });
 
-      if (data.ascending) {
-        cursor.current = 0;
-      } else {
-        cursor.current = 2147483647;
-      }
-      let response = await fetchData("search", data, cursor.current);
+    if (data.ascending) {
+      cursor.current = 0;
+    } else {
+      cursor.current = 2147483647;
+    }
+
+    const searchPromise = fetchData("search", data, cursor.current);
+    const countPromise = fetchData("search/count", data, cursor.current);
+
+    try {
+      const response = await searchPromise;
+
       setResult(response);
       setHasMore(response.length === RESULT_LIMIT);
       cursor.current = response[response.length - 1].no;
-
     } finally {
       setIsSearching(false);
     }
-    const countResponse = await fetchData("search/count", data, cursor.current);
+
+    const countResponse = await countPromise;
     setCount(countResponse);
   };
 
