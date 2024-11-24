@@ -83,7 +83,9 @@ export default function Search() {
     let response = await fetchData("search", formData, cursor.current);
     if (response.length < RESULT_LIMIT) {
       setHasMore(false);
-      return;
+      if (response.length === 0) {
+        return;
+      }
     }
     cursor.current = response[response.length - 1].no;
     setResult([...result, ...response]);
