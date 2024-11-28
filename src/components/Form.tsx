@@ -100,38 +100,38 @@ export function Form({
           />
         </label>
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          順番:
-        </label>
-        <Controller
-          name="ascending"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <div className="flex items-center space-x-6">
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  checked={value === true}
-                  onChange={() => onChange(true)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="ml-2 text-gray-700">昇順</span>
-              </label>
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  checked={value === false}
-                  onChange={() => onChange(false)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="ml-2 text-gray-700">降順</span>
-              </label>
-            </div>
-          )}
-        />
-      </div>
-      <div className="flex justify-end">
+      <div className="mb-4 flex justify-between items-center">
+        <div>
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            順番:
+          </label>
+          <Controller
+            name="ascending"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <div className="flex items-center space-x-6">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={value === true}
+                    onChange={() => onChange(true)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-gray-700">昇順</span>
+                </label>
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={value === false}
+                    onChange={() => onChange(false)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-gray-700">降順</span>
+                </label>
+              </div>
+            )}
+          />
+        </div>
         <button
           type="submit"
           disabled={isSearching}

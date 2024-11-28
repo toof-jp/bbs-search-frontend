@@ -6,6 +6,7 @@ export async function fetchData(
   endpoint: string,
   formData: FormData,
   cursor: number,
+  oekaki: boolean = false,
 ) {
   const params = {
     id: formData.id,
@@ -15,6 +16,7 @@ export async function fetchData(
     ascending: formData.ascending.toString(),
     since: formData.since,
     until: formData.until,
+    oekaki: oekaki.toString(),
   };
   const queryString = new URLSearchParams(params).toString();
   const url = `${BASE_URL}/api/v1/${endpoint}?${queryString}`;

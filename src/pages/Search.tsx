@@ -6,6 +6,8 @@ import { ResJson, CountJson, FormData } from "../types";
 import { fetchData, BASE_URL } from "../utils/Fetch";
 import { Form } from "../components/Form";
 import { Count } from "../components/Count";
+import { NoLink } from "../components/NoLink";
+import { Header } from "../components/Header";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,26 +82,29 @@ export default function Search() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-          掲示板検索
-        </h1>
-        <Form
-          onSubmit={handleFormSubmit}
-          defaultValues={formData}
-          isSearching={isSearching}
-        />
-        {!isSearching && result.length > 0 && (
-          <Result
-            result={result}
-            count={count}
-            hasMore={hasMore}
-            loadMore={loadMore}
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-100 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+            掲示板検索
+          </h1>
+          <Form
+            onSubmit={handleFormSubmit}
+            defaultValues={formData}
+            isSearching={isSearching}
+          />
+          {!isSearching && result.length > 0 && (
+            <Result
+              result={result}
+              count={count}
+              hasMore={hasMore}
+              loadMore={loadMore}
             />
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -156,26 +161,14 @@ function Res({ res }: { res: ResJson }) {
   );
 }
 
-function NoLink({ no }: { no: number }) {
-  const pageNo = Math.floor((no - 1) / 30) * 30 + 1;
-  const url = `https://dic.nicovideo.jp/b/c/ch2598430/${pageNo}-#${no}`;
-  return (
-    <a
-      href={url}
-      target="_blank"
-      className="text-blue-600 hover:text-blue-800 hover:underline"
-    >
-      {no}
-    </a>
-  );
-}
-
 function Oekaki({ res }: { res: ResJson }) {
   const imageUrl = `${BASE_URL}/images/${res.oekaki_id}.png`;
   return (
     <div className="mt-2 prose prose-sm">
       <img src={imageUrl} alt={res.oekaki_title} className="max-w-full" />
-      <div className="text-gray-800">タイトル: {res.oekaki_title}</div>
+      {res.oekaki_title && (
+        <div className="text-gray-800">タイトル: {res.oekaki_title}</div>
+      )}
       {res.original_oekaki_res_no && (
         <div className="text-gray-800">
           <NoLink no={res.original_oekaki_res_no} /> この絵を基にしています！
