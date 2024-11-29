@@ -117,7 +117,7 @@ export function Form({
                     onChange={() => onChange(true)}
                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700">昇順</span>
+                  <span className="ml-2 text-gray-700">古い順</span>
                 </label>
                 <label className="inline-flex items-center cursor-pointer">
                   <input
@@ -126,7 +126,7 @@ export function Form({
                     onChange={() => onChange(false)}
                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700">降順</span>
+                  <span className="ml-2 text-gray-700">新しい順</span>
                 </label>
               </div>
             )}
