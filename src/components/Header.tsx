@@ -17,7 +17,7 @@ export function Header() {
                 to="/oekaki"
                 className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700"
               >
-                お絵かき
+                お絵かきをまとめる機械
               </Link>
             </div>
           </div>
