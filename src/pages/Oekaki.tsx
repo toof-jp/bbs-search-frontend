@@ -148,8 +148,8 @@ function OekakiCard({ res }: { res: ResJson }) {
   const imageUrl = `${BASE_URL}/images/${res.oekaki_id}.png`;
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden h-full border border-gray-200 shadow-sm">
-      <div className="aspect-w-1 aspect-h-1">
+    <div className="bg-white h-full border border-gray-200 shadow-sm">
+      <div className="aspect-w-1 aspect-h-1 border-b border-gray-200">
         <img
           src={imageUrl}
           alt={res.oekaki_title}
