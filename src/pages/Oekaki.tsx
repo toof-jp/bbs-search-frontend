@@ -2,15 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import { useSearchParams } from "react-router-dom";
 
-import { ResJson, CountJson, FormData } from "../types";
+import type { ResJson, CountJson, FormData } from "../types";
 import { fetchData, BASE_URL } from "../utils/Fetch";
-import { Form } from "../components/Form";
+import { Form, type FormHandle } from "../components/Form";
 import { Count } from "../components/Count";
 import { NoLink } from "../components/NoLink";
 import { Header } from "../components/Header";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const formRef = useRef<FormHandle>(null);
   const [formData, setFormData] = useState<FormData>(() => ({
     id: searchParams.get("id") || "",
     main_text: searchParams.get("main_text") || "",
@@ -75,6 +76,10 @@ export default function Search() {
     setResult([...result, ...response]);
   };
 
+  const handleIdClick = (id: string) => {
+    formRef.current?.setValue("id", id);
+  };
+
   useEffect(() => {
     if (searchParams.toString()) {
       handleFormSubmit(formData);
@@ -90,6 +95,7 @@ export default function Search() {
             お絵描きをまとめる機械
           </h1>
           <Form
+            ref={formRef}
             onSubmit={handleFormSubmit}
             defaultValues={formData}
             isSearching={isSearching}
@@ -100,6 +106,7 @@ export default function Search() {
               count={count}
               hasMore={hasMore}
               loadMore={loadMore}
+              onIdClick={handleIdClick}
             />
           )}
         </div>
@@ -113,11 +120,13 @@ function Result({
   count,
   loadMore,
   hasMore,
+  onIdClick,
 }: {
   result: Array<ResJson>;
   count: CountJson | null;
   loadMore: () => void;
   hasMore: boolean;
+  onIdClick: (id: string) => void;
 }) {
   const loader = (
     <div key="loader" className="flex justify-center py-4 text-gray-600">
@@ -136,7 +145,7 @@ function Result({
       >
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {result.map((res: ResJson) => (
-            <OekakiCard key={res.no} res={res} />
+            <OekakiCard key={res.no} res={res} onIdClick={onIdClick} />
           ))}
         </ul>
       </InfiniteScroll>
@@ -144,7 +153,7 @@ function Result({
   );
 }
 
-function OekakiCard({ res }: { res: ResJson }) {
+function OekakiCard({ res, onIdClick }: { res: ResJson; onIdClick: (id: string) => void }) {
   const imageUrl = `${BASE_URL}/images/${res.oekaki_id}.png`;
 
   return (
@@ -159,7 +168,10 @@ function OekakiCard({ res }: { res: ResJson }) {
       <div className="text-sm text-gray-600 mb-2 p-4">
         <NoLink no={res.no} /> <div className="inline">{res.name_and_trip}</div>{" "}
         <div className="inline">{res.datetime_text}</div>{" "}
-        <div className="inline">ID: {res.id}</div>
+        <div className="inline">ID: <button 
+          onClick={() => onIdClick(res.id)} 
+          className="text-blue-500 hover:underline cursor-pointer"
+        >{res.id}</button></div>
         <div
           className="text-gray-800 prose prose-sm max-w-none prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline"
           dangerouslySetInnerHTML={{ __html: res.main_text_html }}

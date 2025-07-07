@@ -2,15 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroller";
 import { useSearchParams } from "react-router-dom";
 
-import { ResJson, CountJson, FormData } from "../types";
+import type { ResJson, CountJson, FormData } from "../types";
 import { fetchData, BASE_URL } from "../utils/Fetch";
-import { Form } from "../components/Form";
+import { Form, type FormHandle } from "../components/Form";
 import { Count } from "../components/Count";
 import { NoLink } from "../components/NoLink";
 import { Header } from "../components/Header";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const formRef = useRef<FormHandle>(null);
   const [formData, setFormData] = useState<FormData>(() => ({
     id: searchParams.get("id") || "",
     main_text: searchParams.get("main_text") || "",
@@ -75,6 +76,10 @@ export default function Search() {
     setResult([...result, ...response]);
   };
 
+  const handleIdClick = (id: string) => {
+    formRef.current?.setValue("id", id);
+  };
+
   useEffect(() => {
     if (searchParams.toString()) {
       handleFormSubmit(formData);
@@ -90,6 +95,7 @@ export default function Search() {
             掲示板検索
           </h1>
           <Form
+            ref={formRef}
             onSubmit={handleFormSubmit}
             defaultValues={formData}
             isSearching={isSearching}
@@ -100,6 +106,7 @@ export default function Search() {
               count={count}
               hasMore={hasMore}
               loadMore={loadMore}
+              onIdClick={handleIdClick}
             />
           )}
         </div>
@@ -113,11 +120,13 @@ function Result({
   count,
   loadMore,
   hasMore,
+  onIdClick,
 }: {
   result: Array<ResJson>;
   count: CountJson | null;
   loadMore: () => void;
   hasMore: boolean;
+  onIdClick: (id: string) => void;
 }) {
   const loader = (
     <div key="loader" className="flex justify-center py-4 text-gray-600">
@@ -136,7 +145,7 @@ function Result({
       >
         <ul className="divide-y divide-gray-200">
           {result.map((res: ResJson) => (
-            <Res key={res.no} res={res} />
+            <Res key={res.no} res={res} onIdClick={onIdClick} />
           ))}
         </ul>
       </InfiniteScroll>
@@ -144,13 +153,16 @@ function Result({
   );
 }
 
-function Res({ res }: { res: ResJson }) {
+function Res({ res, onIdClick }: { res: ResJson; onIdClick: (id: string) => void }) {
   return (
     <li className="py-4">
       <div className="text-sm text-gray-600 mb-2">
         <NoLink no={res.no} /> <div className="inline">{res.name_and_trip}</div>{" "}
         <div className="inline">{res.datetime_text}</div>{" "}
-        <div className="inline">ID: {res.id}</div>
+        <div className="inline">ID: <button 
+          onClick={() => onIdClick(res.id)} 
+          className="text-blue-500 hover:underline cursor-pointer"
+        >{res.id}</button></div>
       </div>
       <div
         className="text-gray-800 prose prose-sm max-w-none prose-a:text-blue-500 prose-a:no-underline hover:prose-a:underline"

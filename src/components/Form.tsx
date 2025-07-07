@@ -1,19 +1,27 @@
 import { useForm, Controller } from "react-hook-form";
+import { forwardRef, useImperativeHandle } from "react";
 
-import { FormData } from "../types";
+import type { FormData } from "../types";
 
-export function Form({
-  onSubmit,
-  defaultValues,
-  isSearching,
-}: {
-  onSubmit: (data: FormData) => void;
-  defaultValues: FormData;
-  isSearching: boolean;
-}) {
-  const { control, handleSubmit } = useForm<FormData>({
+export interface FormHandle {
+  setValue: (name: keyof FormData, value: string | boolean) => void;
+}
+
+export const Form = forwardRef<
+  FormHandle,
+  {
+    onSubmit: (data: FormData) => void;
+    defaultValues: FormData;
+    isSearching: boolean;
+  }
+>(({ onSubmit, defaultValues, isSearching }, ref) => {
+  const { control, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: defaultValues,
   });
+
+  useImperativeHandle(ref, () => ({
+    setValue,
+  }));
 
   return (
     <form
@@ -157,4 +165,4 @@ export function Form({
       </div>
     </form>
   );
-}
+});
