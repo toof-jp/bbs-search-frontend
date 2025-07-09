@@ -24,6 +24,7 @@ export default function Search() {
   const [hasMore, setHasMore] = useState<boolean>(false);
   const cursor = useRef<number>(0);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
 
   const RESULT_LIMIT = 100;
 
@@ -100,6 +101,7 @@ export default function Search() {
               count={count}
               hasMore={hasMore}
               loadMore={loadMore}
+              isLogin={isLogin}
             />
           )}
         </div>
@@ -113,11 +115,13 @@ function Result({
   count,
   loadMore,
   hasMore,
+  isLogin,
 }: {
   result: Array<ResJson>;
   count: CountJson | null;
   loadMore: () => void;
   hasMore: boolean;
+  isLogin: boolean;
 }) {
   const loader = (
     <div key="loader" className="flex justify-center py-4 text-gray-600">
@@ -136,7 +140,8 @@ function Result({
       >
         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {result.map((res: ResJson) => (
-            <OekakiCard key={res.no} res={res} />
+            <OekakiCard key={res.no} res={res} isLogin={true} />
+            //<OekakiCard key={res.no} res={res} isLogin={isLogin} />
           ))}
         </ul>
       </InfiniteScroll>
@@ -144,7 +149,7 @@ function Result({
   );
 }
 
-function OekakiCard({ res }: { res: ResJson }) {
+function OekakiCard({ res, isLogin }: { res: ResJson; isLogin: boolean }) {
   const imageUrl = `${BASE_URL}/images/${res.oekaki_id}.png`;
 
   return (
@@ -171,6 +176,11 @@ function OekakiCard({ res }: { res: ResJson }) {
           <div className="text-gray-800">
             <NoLink no={res.original_oekaki_res_no} /> この絵を基にしています！
           </div>
+        )}
+        {isLogin && (
+          <button className="mt-2 text-pink-500 hover:text-pink-600 text-2xl">
+            ☆
+          </button>
         )}
       </div>
     </div>
